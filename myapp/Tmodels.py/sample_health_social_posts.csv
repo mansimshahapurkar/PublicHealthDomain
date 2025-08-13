@@ -1,0 +1,45 @@
+post_id,text,topic,sentiment,misinformation,entities
+1,Drinking hot water cures COVID-19. Try it!,Misinformation,Neutral,True,"[{'text': 'COVID-19', 'label': 'ORG'}]"
+2,Some still believe that vaccines cause autism.,Misinformation,Neutral,True,[]
+3,Masks don't work. Stop falling for the scam.,Misinformation,Negative,True,[]
+4,Climate change is a hoax. Just a way to control us.,Misinformation,Negative,True,[]
+5,Doctors at WHO are doing an amazing job!,General,Positive,False,[]
+6,New AI-based diagnostic tool launched by Mayo Clinic.,Health,Positive,False,"[{'text': 'New AI', 'label': 'GPE'}, {'text': 'Mayo Clinic', 'label': 'ORG'}]"
+7,"Finally, free cancer screenings in Lagos this week.",General,Negative,False,"[{'text': 'Lagos', 'label': 'GPE'}]"
+8,Health services in rural India are improving rapidly.,General,Positive,False,"[{'text': 'India', 'label': 'GPE'}]"
+9,Telemedicine in Australia has reduced wait times.,General,Neutral,False,"[{'text': 'Australia', 'label': 'GPE'}]"
+10,Poor hospital conditions in Delhi worsen patient outcomes.,Health,Negative,False,"[{'text': 'Delhi', 'label': 'GPE'}]"
+11,Shortage of insulin in some parts of Cairo.,General,Negative,False,"[{'text': 'Cairo', 'label': 'GPE'}]"
+12,Mental health crisis is growing worldwide.,Health,Negative,False,[]
+13,Hospitals in UK are overwhelmed again.,Health,Positive,False,"[{'text': 'UK', 'label': 'GPE'}]"
+14,No ICU beds left in São Paulo!,General,Negative,False,"[{'text': 'ICU', 'label': 'ORG'}, {'text': 'São Paulo', 'label': 'GPE'}]"
+15,Attended a mental health workshop in Paris.,Health,Neutral,False,"[{'text': 'Paris', 'label': 'GPE'}]"
+16,Annual vaccination campaign begins in Germany.,General,Neutral,False,"[{'text': 'Germany', 'label': 'GPE'}]"
+17,National Health Report released by CDC.,General,Neutral,False,"[{'text': 'National Health Report', 'label': 'ORG'}, {'text': 'CDC', 'label': 'ORG'}]"
+18,Health awareness week starts next Monday.,General,Neutral,False,[]
+19,Visited a new clinic in Lagos. Impressed.,Health,Positive,False,"[{'text': 'Lagos', 'label': 'GPE'}]"
+20,COVID-19 cases are rising again in Tokyo.,Disease,Neutral,False,"[{'text': 'Tokyo', 'label': 'GPE'}]"
+21,Malaria vaccine shows 70% success in trials.,Disease,Positive,False,"[{'text': 'Malaria', 'label': 'ORG'}]"
+22,Outbreak of measles in parts of Nigeria.,General,Neutral,False,"[{'text': 'Nigeria', 'label': 'GPE'}]"
+23,Research on HIV cure is making progress.,General,Positive,False,[]
+24,Latest flu strain identified in Canada.,Disease,Negative,False,"[{'text': 'Canada', 'label': 'GPE'}]"
+25,AQI in New Delhi crosses 300. Dangerous!,Pollution,Negative,False,"[{'text': 'New Delhi', 'label': 'GPE'}]"
+26,Smog has reduced visibility in Moscow.,Pollution,Negative,False,"[{'text': 'Smog', 'label': 'ORG'}, {'text': 'Moscow', 'label': 'GPE'}]"
+27,New clean energy law passed in Berlin.,General,Positive,False,"[{'text': 'Berlin', 'label': 'GPE'}]"
+28,Lagos launches anti-pollution awareness drive.,Pollution,Neutral,False,[]
+29,Pollution alert issued for Cairo tomorrow.,Pollution,Positive,False,"[{'text': 'Cairo', 'label': 'GPE'}]"
+30,Record heatwave in UK due to climate change.,Climate Change,Neutral,False,"[{'text': 'UK', 'label': 'GPE'}]"
+31,New York introduces carbon-neutral building mandate.,Climate Change,Neutral,False,"[{'text': 'New York', 'label': 'GPE'}]"
+32,Rising sea levels threaten Venice.,General,Negative,False,"[{'text': 'Venice', 'label': 'GPE'}]"
+33,Youth rallies in Brazil for climate justice.,Climate Change,Positive,False,"[{'text': 'Brazil', 'label': 'GPE'}]"
+34,UN climate summit to be held in Tokyo.,Climate Change,Neutral,False,"[{'text': 'UN', 'label': 'ORG'}, {'text': 'Tokyo', 'label': 'GPE'}]"
+35,5G towers are the real cause of COVID!,Disease,Neutral,False,"[{'text': 'COVID', 'label': 'ORG'}]"
+36,Vitamin C alone can prevent all diseases!,General,Positive,False,[]
+37,Flu shots make you sicker. Don’t take them.,Disease,Negative,False,[]
+38,Bill Gates wants to microchip people through vaccines.,Disease,Neutral,False,[]
+39,Eating garlic can kill the coronavirus. Totally proven!,General,Negative,False,[]
+40,Harvard Medical School develops new cancer therapy.,General,Negative,False,"[{'text': 'Harvard Medical School', 'label': 'ORG'}]"
+41,Free COVID testing centers open in NYC.,Disease,Positive,False,[]
+42,Mental health apps are helping millions globally.,Health,Positive,False,[]
+43,Researchers in Japan develop universal flu vaccine.,Disease,Negative,False,"[{'text': 'Japan', 'label': 'GPE'}]"
+44,Community clinics in Nigeria offering 24/7 care.,Health,Positive,False,"[{'text': 'Nigeria', 'label': 'GPE'}]"
