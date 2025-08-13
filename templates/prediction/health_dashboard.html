@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-4">
+        <h2 class="text-primary">📊 Health Insight Dashboard</h2>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Posts</h5>
+                        <p class="card-text h4">{{ total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Misinformation Posts</h5>
+                        <p class="card-text h4 text-danger">{{ misinfo_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Sentiment Breakdown</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><span class="badge bg-success">Positive:</span> {{ sentiment_counts.Positive }}</li>
+                            <li><span class="badge bg-danger">Negative:</span> {{ sentiment_counts.Negative }}</li>
+                            <li><span class="badge bg-secondary">Neutral:</span> {{ sentiment_counts.Neutral }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights Table -->
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered table-hover table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Text</th>
+                    <th scope="col">Topic</th>
+                    <th scope="col">Sentiment</th>
+                    <th scope="col">Misinformation</th>
+                    <th scope="col">Entities</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in insights %}
+                <tr>
+                    <td>{{ i.text }}</td>
+                    <td><span class="badge bg-info">{{ i.topic }}</span></td>
+                    <td>
+                        {% if i.sentiment == "Positive" %}
+                            <span class="badge bg-success">Positive</span>
+                        {% elif i.sentiment == "Negative" %}
+                            <span class="badge bg-danger">Negative</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Neutral</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if i.misinformation %}
+                            <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for e in i.entities %}
+                            <span class="badge bg-light text-dark border">{{ e.text }} ({{ e.label }})</span><br>
+                        {% empty %}
+                            <span class="text-muted">None</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

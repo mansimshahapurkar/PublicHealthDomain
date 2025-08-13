@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>📊 Sentiment Dashboard ({{ latest_month }})</h2>
+
+    <div>
+    <h3>🔥 Trending Topic</h3>
+    <p><strong>{{ trending_topic }}</strong> is the most discussed topic this month.</p>
+    </div>
+
+    <div>
+    <h3>🚨 Highest Negative Sentiment</h3>
+    <p><strong>{{ highest_negative_topic }}</strong> has the most negative sentiment.</p>
+    </div>
+
+    <div>
+    <h3>💡 Recommendations</h3>
+    <ul>
+        {% for tip in suggestions %}
+        <li>{{ tip }}</li>
+        {% empty %}
+        <li>✅ All topics show balanced sentiment this month.</li>
+        {% endfor %}
+    </ul>
+    </div>
+
+    <div>
+    <h3>📍 Locations with Most Negative Sentiment</h3>
+    <ol>
+        {% for location in top_locations %}
+        <li>{{ location }}</li>
+        {% empty %}
+        <li>No major concern locations this month.</li>
+        {% endfor %}
+    </ol>
+    </div>
+
+    <h3>🦠 Most Discussed Diseases</h3>
+    <ul>
+    {% if top_diseases %}
+        {% for disease, count in top_diseases %}
+        <li>{{ disease }} ({{ count }} mentions)</li>
+        {% endfor %}
+    {% else %}
+        <li>No specific diseases were discussed this month.</li>
+    {% endif %}
+    </ul>
+
+</div>
+{% endblock %}

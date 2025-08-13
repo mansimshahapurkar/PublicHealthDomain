@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Named Entity Recognition - Health Terms</h2>
+    {% for item in results %}
+    <div style="margin-bottom:20px;">
+        <strong>Text:</strong> {{ item.text }}<br>
+        <ul>
+        {% for ent in item.entities %}
+            <li><b>{{ ent.text }}</b> ({{ ent.label }})</li>
+        {% empty %}
+            <li>No health-related entities detected.</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+{% endblock %}

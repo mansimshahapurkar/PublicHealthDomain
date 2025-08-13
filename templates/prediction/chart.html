@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* Custom background gradient for the container */
+.container {
+    background: linear-gradient(135deg, #FFDDC1, #D4E6F1);  /* Soft pink to blue gradient */
+    border-radius: 15px; /* Rounded corners */
+    padding: 40px 30px; /* Adds space inside the container */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow around the container */
+}
+
+/* Title Styling */
+h2 {
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Clean modern font */
+    font-weight: bold; /* Makes the title bold */
+    color: #2C3E50;  /* Dark text color */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    font-size: 2.5rem; /* Larger title font */
+}
+
+/* Chart Container Styling */
+.chart-container {
+    max-width: 90%; /* Ensures the chart doesn't take up the entire screen */
+    margin: 0 auto;  /* Centers the chart in the container */
+}
+
+/* Image styling for the chart */
+.chart-container img {
+    border-radius: 10px;  /* Rounded corners for the chart */
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);  /* Soft shadow to create depth */
+    transition: transform 0.3s ease-in-out; /* Smooth scale-up effect on hover */
+}
+
+/* Add zoom effect on hover */
+.chart-container img:hover {
+    transform: scale(1.05); /* Slight zoom-in effect */
+}
+
+</style>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{{ title }}</h2>
+
+    <!-- Chart Image with Shadow and Styling -->
+    <div class="chart-container text-center">
+        <img src="data:image/png;base64,{{ chart }}" alt="{{ title }}" class="img-fluid shadow-lg rounded">
+    </div>
+</div>
+{% endblock %}

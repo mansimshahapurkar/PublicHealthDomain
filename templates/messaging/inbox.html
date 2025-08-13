@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<h2>Your Inbox</h2>
+
+<!-- Send Message Link -->
+<a href="{% url 'send_message' %}" class="btn btn-primary mb-3">Send Message</a>
+
+{% for message in messages %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h5 class="card-title">From: {{ message.sender }}</h5>
+            <p class="card-text">{{ message.content }}</p>
+            <small class="text-muted">{{ message.timestamp }}</small>
+        </div>
+    </div>
+{% empty %}
+    <p>No messages.</p>
+{% endfor %}
+{% endblock %}

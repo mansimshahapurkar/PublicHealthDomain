@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Public Health Domain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7faff;
+            /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+            /* font-family: "Oswald", Helvetica, Arial, sans-serif!important; */
+            /* font-family: monospace; */
+            /* font-family: inherit; */
+            /* font-family: 'Galmuri7'; */
+            /* font-family: 'Oswald', sans-serif !important; */
+            /* font-family: 'Rubik', sans-serif !important;   */
+            font-family: "Noto Mono", monospace
+        }
+        .navbar {
+            background-color: #e3f2fd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #1565c0;
+        }
+        .nav-link {
+            color: #0d47a1;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #1976d2;
+        }
+        .btn-primary, .btn-outline-primary {
+            border-radius: 30px;
+        }
+        .btn-outline-danger {
+            border-radius: 30px;
+        }
+        .btn-primary {
+            background-color: #5c8df6;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #3b6de0;
+        }
+        .container {
+            margin-top: 40px;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        footer {
+            background-color: #e3f2fd;
+            padding: 1rem 0;
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .team-member {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .team-member img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-blue">
+        <div class="container-fluid">
+            <!-- Logo and Brand Name -->
+            <a class="navbar-brand" href="/">Public Health Domain</a>
+
+            <!-- Toggler -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav">
+
+                    <!-- Combined Menu Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarMainMenu" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Menu
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarMainMenu">
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'inbox' %}">Inbox</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'submit_feedback' %}">Submit Feedback</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'password_change' %}">Password Change</a></li>
+
+                            <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
+
+                        </ul>
+                    </li>
+
+
+                    <!-- Profile Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarProfile" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Prediction
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarProfile">
+                            <li><a class="dropdown-item" href="{% url 'summary_view' %}">Summary View</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sentiment_distribution' %}">Sentiment Distribution</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sentiment_trend' %}">Sentiment Trend</a></li>
+                            <li><a class="dropdown-item" href="{% url 'classify_text' %}">Health Terms</a></li>      
+                            <li><a class="dropdown-item" href="{% url 'health_insight_dashboard' %}">Health Insights</a></li>
+
+                        </ul>
+                    </li>
+
+                    <!-- Logout Button -->
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger" type="submit">Logout</button>
+                    </form>
+                </ul>
+
+                {% else %}
+                <a class="btn btn-outline-dark" href="{% url 'login' %}">Login</a>
+                <a class="btn btn-outline-dark ms-2" href="{% url 'signup' %}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Content Block -->
+    <div class="container">
+        {% block content %}
+            <!-- Hero Carousel -->
+            <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="https://d2jx2rerrg6sh3.cloudfront.net/images/Article_Images/ImageForArticle_25138_17230361574226759.jpg" class="d-block w-100" alt="Mental Health 1" style="height: 500px; object-fit: cover;">
+                        <div class="carousel-caption d-none d-md-block" style="color: black;background-color: white;">
+                            <h1>Welcome to Public Health Domain</h1>
+                            <p>Prioritizing your emotional well-being, every day.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://www.healthandcarevideos.com/storage/2018/11/Screen-Shot-2018-11-14-at-15.59.22.png" class="d-block w-100" alt="Mental Health 2" style="height: 500px; object-fit: cover;">
+                        <div class="carousel-caption d-none d-md-block" style="color: black;background-color: white;">
+                            <h1>Professional Support</h1>
+                            <p>Connect with trusted caregivers anytime, anywhere.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://cdni.iconscout.com/illustration/premium/thumb/health-care-2279327-1903990.png" class="d-block w-100" alt="Mental Health 3" style="height: 500px; object-fit: cover;">
+                        <div class="carousel-caption d-none d-md-block" style="color: black;background-color: white;">
+                            <h1>You're Not Alone</h1>
+                            <p>Join our community and take the first step towards healing.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <footer>
+                &copy; {{ year|default:"2025" }} Public Health Domain. All Rights Reserved.
+            </footer>
+        {% endblock %}
+    </div>
+
+
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

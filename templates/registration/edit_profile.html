@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<h2>Edit Profile</h2>
+
+<!-- Display logged in user's info -->
+<p><strong>Username:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save Changes</button>
+</form>
+
+{% if user.profile.profile_pic %}
+    <h4>Current Profile Picture:</h4>
+    <img src="{{ user.profile.profile_pic.url }}" width="150" height="150">
+{% endif %}
+{% endblock %}

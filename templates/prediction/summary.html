@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Sentiment Summary</h2>
+
+    <!-- Table Styling with Bootstrap -->
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Topic</th>
+          <th>Positive</th>
+          <th>Negative</th>
+          <th>Neutral</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in summary %}
+        <tr>
+          <td>{{ row.topic }}</td>
+          <td>{{ row.Positive }}</td>
+          <td>{{ row.Negative }}</td>
+          <td>{{ row.Neutral }}</td>
+          <td>{{ row.Total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+{% endblock %}

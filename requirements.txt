@@ -1,0 +1,13 @@
+pip install django
+pip install django-crispy-forms
+pip install crispy-bootstrap5
+pip install nltk
+pip install spacy
+python -m spacy download en_core_web_sm
+pip install scispacy
+pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/en_core_sci_sm-0.5.1.tar.gz
+pip install transformers
+pip install faker pandas vaderSentiment spacy
+python -m spacy download en_core_web_sm
+pip install transformers
+conda install pytorch torchvision torchaudio cpuonly -c pytorch

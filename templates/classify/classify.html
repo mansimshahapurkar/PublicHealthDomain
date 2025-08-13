@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow rounded">
+        <div class="card-body">
+          <h2>Enter Text for Classification</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea name="text" class="form-control" rows="4" required>{{ input_text|default:"" }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Analyze</button>
+            </form>
+
+            {% if sentiment %}
+                <div class="mt-4">
+                    <h4>Results:</h4>
+                    <p><strong>Topic:</strong> {{ topic }}</p>
+                    <p><strong>Sentiment:</strong> {{ sentiment }}</p>
+                    <p><strong>Misinformation:</strong> {{ misinformation }}</p>
+                    <p><strong>Entities:</strong></p>
+                    <ul>
+                        {% for entity in entities %}
+                            <li>{{ entity.text }} ({{ entity.label }})</li>
+                        {% empty %}
+                            <li>No relevant entities found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
