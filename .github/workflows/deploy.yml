@@ -29,11 +29,9 @@ jobs:
       - name: Build Docker Image
         run: docker build -t public-health-app:${{ github.run_number }} .
 
-      # Save docker image as a tarball for sending to EC2
       - name: Save Docker Image
         run: docker save public-health-app:${{ github.run_number }} > app.tar
 
-      # Upload image to EC2 via SCP
       - name: Upload Image to EC2
         uses: appleboy/scp-action@master
         with:
@@ -43,7 +41,6 @@ jobs:
           source: "app.tar"
           target: "~/"
 
-      # Run container on EC2
       - name: Deploy on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -52,12 +49,12 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker load < app.tar
+            docker tag public-health-app:${{ github.run_number }} public-health-app:latest
             docker stop health-app || true
             docker rm health-app || true
-            docker run -d -p 8080:8080 --name health-app public-health-app:${{ github.run_number }}
+            docker run -d -p 8000:8000 --name health-app public-health-app:latest
             docker logs health-app > app.log
 
-      # Download logs from EC2 to runner
       - name: Download Logs from EC2
         uses: appleboy/scp-action@master
         with:
@@ -67,11 +64,9 @@ jobs:
           source: "app.log"
           target: "./"
 
-      # Upload logs to S3
       - name: Upload Logs to S3
         run: aws s3 cp app.log s3://${{ env.S3_BUCKET }}/logs/app-${{ github.run_number }}.log
 
-      # Upload artifacts to S3
       - name: Upload Artifacts
         run: |
           mkdir -p build
