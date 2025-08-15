@@ -2,55 +2,45 @@ name: CI/CD Pipeline - EC2 Docker Deployment + S3 Logs
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      # Step 2: Set up SSH agent with your private key
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.8.1
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+    - name: Copy files to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "."
+        target: "~/PublicHealthDomain"
 
-      # Step 3: Deploy to EC2
-      - name: Deploy Docker app to EC2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            # Navigate to your project folder
-            cd ~/PublicHealthDomain
+    - name: SSH into EC2 and rebuild Docker
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd ~/PublicHealthDomain
+          docker stop health-app || true
+          docker rm health-app || true
+          docker build -t public-health-app:dev --target development .
+          docker run -d --name health-app -p 8000:8000 -v ~/PublicHealthDomain:/app public-health-app:dev
 
-            # Reset and pull latest code
-            git reset --hard
-            git pull origin main
-
-            # Build Docker image
-            docker build -t public-health-app:latest .
-
-            # Stop and remove previous container if exists
-            docker stop health-app || true
-            docker rm health-app || true
-
-            # Run the container
-            docker run -d --name health-app -p 8000:8000 public-health-app:latest
-
-            # Ensure logs folder exists inside container
-            docker exec health-app mkdir -p /app/logs
-
-            # Sync logs to S3
-            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
-          EOF
-
-      # Step 4: Confirmation
-      - name: Deployment completed
-        run: echo "✅ Docker app deployed and logs uploaded to S3 successfully."
+    - name: Sync logs to S3
+      uses: jakejarvis/s3-sync-action@v1
+      with:
+        args: --exact-timestamps --delete
+      env:
+        AWS_S3_BUCKET: jenkins-artifacts-logs
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-1
+        SOURCE_DIR: ~/PublicHealthDomain/logs
