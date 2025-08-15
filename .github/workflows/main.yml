@@ -10,44 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup SSH key for EC2
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.8.1
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
+      # 3️⃣ Deploy to EC2
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e  # Exit immediately if any command fails
+          set -e
 
-            cd ~/PublicHealthDomain
+          echo "=== Cleaning repo and pulling latest code ==="
+          cd ~/PublicHealthDomain
+          git reset --hard
+          git clean -fd
+          git pull origin main
 
-            # Ensure local changes do not block git pull
-            git reset --hard
-            git clean -fd
+          echo "=== Removing old container ==="
+          docker rm -f health-app || true
 
-            # Pull latest code
-            git pull origin main
+          echo "=== Cleaning dangling Docker images to free space ==="
+          docker image prune -af || true
+          docker volume prune -f || true
 
-            # Build Docker image
-            docker build --no-cache -t public-health-app:latest .
+          echo "=== Building Docker image ==="
+          docker build --no-cache -t public-health-app:latest .
 
-            # Stop and remove old container if exists
-            docker stop health-app || true
-            docker rm health-app || true
+          echo "=== Running new container ==="
+          docker run -d --name health-app -p 8000:8000 public-health-app:latest
 
-            # Run new container
-            docker run -d --name health-app -p 8000:8000 public-health-app:latest
+          echo "=== Ensure logs directory exists inside container ==="
+          docker exec health-app mkdir -p /app/logs
 
-            # Ensure logs folder exists inside container
-            docker exec health-app mkdir -p /app/logs
+          echo "=== Sync logs to S3 ==="
+          docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
 
-            # Optional: sync logs to S3
-            # docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+          echo "Deployment complete!"
           EOF
 
+      # 4️⃣ Confirm deployment in GitHub Actions log
       - name: Confirm deployment
-        run: echo "Deployment complete. Your site should now be updated."
+        run: echo "✅ Deployment to EC2 finished and logs synced to S3."
