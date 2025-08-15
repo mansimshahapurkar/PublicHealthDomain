@@ -67,7 +67,7 @@ jobs:
       - name: Upload Logs to S3
         run: aws s3 cp app.log s3://${{ env.S3_BUCKET }}/logs/app-${{ github.run_number }}.log
 
-      - name: Upload Artifacts
+      - name: Upload Artifacts to S3
         run: |
           mkdir -p build
           cp -r * build/ || true
