@@ -21,20 +21,23 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            # Go to app directory
             cd ~/PublicHealthDomain
 
-            # Ensure latest code
-            git fetch origin main
-            git reset --hard origin/main
+            # Ensure latest main branch
+            git reset --hard
+            git pull origin main
 
             # Build Docker image
             docker build -t public-health-app:latest .
 
-            # Stop & remove old container if exists
+            # Stop & remove old container
             docker stop health-app || true
             docker rm health-app || true
 
-            # Run new container with volume mount for live template updates
+            # Run new container with volume mount so future changes persist
             docker run -d --name health-app -p 8000:8000 -v ~/PublicHealthDomain:/app public-health-app:latest
 
             # Ensure logs folder exists inside container
@@ -45,4 +48,4 @@ jobs:
           EOF
 
       - name: Confirm deployment
-        run: echo "Deployment complete and logs synced to S3."
+        run: echo "Deployment complete. Your EC2 instance has the latest changes."
