@@ -11,39 +11,21 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-
-
-
-
 # ========================
 # Development Stage
 # ========================
 FROM base AS development
 
-
 # Optional: install extra tools for live reload
 RUN pip install watchdog
 
 COPY . .
+
 # Create logs directory
 RUN mkdir -p /app/logs
+
 EXPOSE 8000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # ========================
 # Production Stage
@@ -54,11 +36,5 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput
 
-
-
-
-
-EXPOSE 8000
-
-CMD ["gunicorn", "myproject.wsgi:application"]
-
+EXPOSE 8080
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "myproject.wsgi:application"]
