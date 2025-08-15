@@ -21,30 +21,36 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
-
-            # Navigate to project directory
             cd ~/PublicHealthDomain
 
-            # Reset any local changes and pull latest code
+            # Reset local changes and pull the latest from GitHub
             git reset --hard
             git pull origin main
 
-            # Build Docker image
-            docker build -t public-health-app:latest .
+            # Only rebuild the Docker image if dependencies changed
+            if [ -f requirements.txt ]; then
+              docker build -t public-health-app:latest .
+            fi
 
-            # Stop & remove old container if it exists
+            # Stop & remove old container if exists
             docker stop health-app || true
             docker rm health-app || true
 
-            # Run new container with persistent volume
-            docker run -d --name health-app -p 8000:8000 -v ~/PublicHealthDomain:/app public-health-app:latest
+            # Run container with volume mount for templates
+            docker run -d --name health-app \
+              -p 8000:8000 \
+              -v ~/PublicHealthDomain/templates:/app/templates \
+              -v ~/PublicHealthDomain/static:/app/static \
+              public-health-app:latest
 
-            # Ensure logs directory exists inside container
+            # Ensure logs folder exists inside container
             docker exec health-app mkdir -p /app/logs
 
             # Sync logs to S3
             docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+
+            # Show running containers
+            docker ps -a
           EOF
 
       - name: Confirm deployment
