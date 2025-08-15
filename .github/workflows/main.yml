@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline - EC2 Docker Deployment + S3 Logs
 
 on:
   push:
@@ -9,51 +9,48 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: us-east-1
-      S3_BUCKET: jenkins-artifacts-logs
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker Image
-        run: |
-          docker build -t public-health-app:${{ github.run_number }} .
-
-      - name: Run Container
-        run: |
-          docker run -d -p 8080:8080 --name health-app public-health-app:${{ github.run_number }}
-
-      - name: Wait and Capture Logs
-        run: |
-          sleep 5
-          docker logs health-app > app.log
-
-      - name: Upload Logs to S3
-        uses: jakejarvis/s3-sync-action@master
+      # Step 2: Set up SSH agent with your private key
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.8.1
         with:
-          args: --acl public-read
-        env:
-          AWS_S3_BUCKET: ${{ env.S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: .
-          DEST_DIR: logs/
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Upload Artifacts to S3
-        run: |
-          mkdir -p build
-          cp -r * build/ || true
-          aws s3 cp build/ s3://${{ env.S3_BUCKET }}/artifacts/${{ github.run_number }}/ --recursive
+      # Step 3: Deploy to EC2
+      - name: Deploy Docker app to EC2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Cleanup
         run: |
-          docker stop health-app || true
-          docker rm health-app || true
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            # Navigate to your project folder
+            cd ~/PublicHealthDomain
+
+            # Reset and pull latest code
+            git reset --hard
+            git pull origin main
+
+            # Build Docker image
+            docker build -t public-health-app:latest .
+
+            # Stop and remove previous container if exists
+            docker stop health-app || true
+            docker rm health-app || true
+
+            # Run the container
+            docker run -d --name health-app -p 8000:8000 public-health-app:latest
+
+            # Ensure logs folder exists inside container
+            docker exec health-app mkdir -p /app/logs
+
+            # Sync logs to S3
+            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+          EOF
+
+      # Step 4: Confirmation
+      - name: Deployment completed
+        run: echo "✅ Docker app deployed and logs uploaded to S3 successfully."
