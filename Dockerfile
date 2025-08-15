@@ -17,8 +17,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # ========================
 FROM base AS development
 
-# Install extra tools if needed for dev
-RUN pip install watchdog  # optional for auto-reload
+# Optional: install extra tools for live reload
+RUN pip install watchdog
 
 COPY . .
 
@@ -33,7 +33,6 @@ FROM base AS production
 
 COPY . .
 
-# Collect static files (optional)
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8080
