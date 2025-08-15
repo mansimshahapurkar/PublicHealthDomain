@@ -21,37 +21,33 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e  # Exit immediately if any command fails
+
             cd ~/PublicHealthDomain
 
-            # Reset local changes and pull the latest from GitHub
+            # Ensure local changes do not block git pull
             git reset --hard
+            git clean -fd
+
+            # Pull latest code
             git pull origin main
 
-            # Only rebuild the Docker image if dependencies changed
-            if [ -f requirements.txt ]; then
-              docker build -t public-health-app:latest .
-            fi
+            # Build Docker image
+            docker build --no-cache -t public-health-app:latest .
 
-            # Stop & remove old container if exists
+            # Stop and remove old container if exists
             docker stop health-app || true
             docker rm health-app || true
 
-            # Run container with volume mount for templates
-            docker run -d --name health-app \
-              -p 8000:8000 \
-              -v ~/PublicHealthDomain/templates:/app/templates \
-              -v ~/PublicHealthDomain/static:/app/static \
-              public-health-app:latest
+            # Run new container
+            docker run -d --name health-app -p 8000:8000 public-health-app:latest
 
             # Ensure logs folder exists inside container
             docker exec health-app mkdir -p /app/logs
 
-            # Sync logs to S3
-            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
-
-            # Show running containers
-            docker ps -a
+            # Optional: sync logs to S3
+            # docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
           EOF
 
       - name: Confirm deployment
-        run: echo "Deployment complete and logs synced to S3."
+        run: echo "Deployment complete. Your site should now be updated."
