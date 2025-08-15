@@ -22,8 +22,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
             cd ~/PublicHealthDomain
-            git reset --hard
-            git pull origin main
+
+            # Ensure latest code
+            git fetch origin main
+            git reset --hard origin/main
 
             # Build Docker image
             docker build -t public-health-app:latest .
@@ -32,8 +34,8 @@ jobs:
             docker stop health-app || true
             docker rm health-app || true
 
-            # Run new container
-            docker run -d --name health-app -p 8000:8000 public-health-app:latest
+            # Run new container with volume mount for live template updates
+            docker run -d --name health-app -p 8000:8000 -v ~/PublicHealthDomain:/app public-health-app:latest
 
             # Ensure logs folder exists inside container
             docker exec health-app mkdir -p /app/logs
