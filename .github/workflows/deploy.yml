@@ -1,33 +1,58 @@
-- name: Deploy to EC2
-  run: |
-    ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-      set -e
+name: Deploy to EC2 and Sync Logs
 
-      echo "=== Cleaning repo and pulling latest code ==="
-      cd ~/PublicHealthDomain
+on:
+  push:
+    branches:
+      - main
 
-      git fetch --all
-      git reset --hard origin/main
-      git clean -fd
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-      echo "=== Removing old container ==="
-      docker rm -f health-app || true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      echo "=== Cleaning dangling Docker images ==="
-      docker image prune -af || true
-      docker volume prune -f || true
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      echo "=== Building Docker image ==="
-      docker build --no-cache -t public-health-app:latest .
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
 
-      echo "=== Running new container ==="
-      docker run -d --name health-app -p 8000:8000 public-health-app:latest
+            echo "=== Fix logs directory ownership on host ==="
+            sudo chown -R ec2-user:ec2-user ~/PublicHealthDomain/logs || true
 
-      echo "=== Ensure logs directory exists inside container ==="
-      docker exec health-app mkdir -p /app/logs
+            echo "=== Cleaning repo and pulling latest code ==="
+            cd ~/PublicHealthDomain
+            git fetch --all
+            git reset --hard origin/main
+            git clean -fd
 
-      echo "=== Sync logs to S3 ==="
-      docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+            echo "=== Removing old container ==="
+            docker rm -f health-app || true
 
-      echo "Deployment complete!"
-    EOF
+            echo "=== Cleaning dangling Docker images and volumes ==="
+            docker image prune -af || true
+            docker volume prune -f || true
+
+            echo "=== Building Docker image ==="
+            docker build --no-cache -t public-health-app:latest .
+
+            echo "=== Running new container ==="
+            docker run -d --name health-app -p 8000:8000 public-health-app:latest
+
+            echo "=== Ensure logs directory exists inside container ==="
+            docker exec health-app mkdir -p /app/logs
+
+            echo "=== Sync logs to S3 ==="
+            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+
+            echo "Deployment complete!"
+          EOF
+
+      - name: Confirm deployment
+        run: echo "Deployment complete. Your EC2 instance has the latest changes."
