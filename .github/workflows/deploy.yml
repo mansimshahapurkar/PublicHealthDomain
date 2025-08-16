@@ -36,17 +36,29 @@ jobs:
             git clean -fd
 
             echo "=== Stopping old container if running ==="
-            if [ "$(docker ps -q -f name=health-app)" ]; then
+            if docker ps -q -f name=health-app | grep -q .; then
               docker stop health-app
+            else
+              echo "No running container to stop"
             fi
 
             echo "=== Removing old container if exists (force remove) ==="
-            if [ "$(docker ps -aq -f name=health-app)" ]; then
+            if docker ps -aq -f name=health-app | grep -q .; then
               docker rm -f health-app
+            else
+              echo "No container to remove"
             fi
 
-            # Wait a moment to ensure Docker releases the container name
-            sleep 2
+            echo "=== Verify container is gone ==="
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^health-app$'; then
+              echo "Container still exists! Attempting forced removal again."
+              docker rm -f health-app || true
+            else
+              echo "Container removed successfully."
+            fi
+
+            # Wait a moment to ensure Docker frees container name
+            sleep 5
 
             echo "=== Cleaning dangling Docker images and volumes ==="
             docker image prune -af || true
