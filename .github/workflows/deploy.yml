@@ -1,37 +1,33 @@
-      - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
+- name: Deploy to EC2
+  run: |
+    ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+      set -e
 
-            echo "=== Cleaning repo and pulling latest code ==="
-            cd ~/PublicHealthDomain
+      echo "=== Cleaning repo and pulling latest code ==="
+      cd ~/PublicHealthDomain
 
-            sudo chown -R ec2-user:ec2-user logs || true
-            sudo chmod -R u+rw logs || true
-            sudo chattr -i logs/dev.log || true
-            rm -f logs/dev.log || true
+      git fetch --all
+      git reset --hard origin/main
+      git clean -fd
 
-            git reset --hard origin/main
-            git clean -fd
+      echo "=== Removing old container ==="
+      docker rm -f health-app || true
 
-            echo "=== Removing old container ==="
-            docker rm -f health-app || true
+      echo "=== Cleaning dangling Docker images ==="
+      docker image prune -af || true
+      docker volume prune -f || true
 
-            echo "=== Cleaning dangling Docker images to free space ==="
-            docker image prune -af || true
-            docker volume prune -f || true
+      echo "=== Building Docker image ==="
+      docker build --no-cache -t public-health-app:latest .
 
-            echo "=== Building Docker image ==="
-            docker build --no-cache -t public-health-app:latest .
+      echo "=== Running new container ==="
+      docker run -d --name health-app -p 8000:8000 public-health-app:latest
 
-            echo "=== Running new container ==="
-            docker run -d --name health-app -p 8000:8000 public-health-app:latest
+      echo "=== Ensure logs directory exists inside container ==="
+      docker exec health-app mkdir -p /app/logs
 
-            echo "=== Ensure logs directory exists inside container ==="
-            docker exec health-app mkdir -p /app/logs
+      echo "=== Sync logs to S3 ==="
+      docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
 
-            echo "=== Sync logs to S3 ==="
-            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
-
-            echo "Deployment complete!"
-          EOF
+      echo "Deployment complete!"
+    EOF
