@@ -6,15 +6,14 @@
             echo "=== Cleaning repo and pulling latest code ==="
             cd ~/PublicHealthDomain
 
-            # Fix permissions to avoid 'git clean' errors
+            # Take ownership of logs dir and contents with sudo, fix permissions
             sudo chown -R ec2-user:ec2-user logs || true
-            chmod -R u+rw logs || true
+            sudo chmod -R u+rw logs || true
 
-            # Remove stale git lock file if exists
+            # Remove any leftover git lock files that might block updates
             rm -f .git/refs/remotes/origin/main.lock || true
-            git remote set-head origin -a || true
-            git fetch --prune origin || true
 
+            # Reset and clean repo to sync latest code
             git reset --hard origin/main
             git clean -fd
 
