@@ -35,9 +35,6 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
-            echo "=== Stopping old container if running ==="
-            docker stop health-app || true
-
             echo "=== Removing old container if exists (force remove) ==="
             docker rm -f health-app || true
 
