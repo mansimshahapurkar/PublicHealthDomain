@@ -64,13 +64,13 @@ jobs:
             docker exec health-app mkdir -p /app/logs
 
             echo "=== Sync logs to S3 ==="
-            docker exec -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
-                        -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-                        -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-                        health-app aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive
+            docker exec env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+                           AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                           AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+                           aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive
 
             echo "=== Deployment complete! ==="
           EOF
 
       - name: Confirm deployment
-        run: echo "✅ Deployment complete. Your EC2 instance at http://${{ secrets.EC2_HOST }}:8000 is up-to-date."
+        run: echo "✅ Deployment complete. Your EC2 instance is now live at: http://${{ secrets.EC2_HOST }}:8000"
