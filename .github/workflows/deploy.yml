@@ -63,11 +63,8 @@ jobs:
             echo "=== Ensure logs directory exists inside container ==="
             docker exec health-app mkdir -p /app/logs
 
-            echo "=== Sync logs to S3 with explicit AWS credentials passed inside container ==="
-            docker exec -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
-                        -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-                        -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-                        health-app aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive
+            echo "=== Sync logs to S3 with AWS credentials exported inside container shell ==="
+            docker exec health-app sh -c "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
 
             echo "Deployment complete!"
           EOF
