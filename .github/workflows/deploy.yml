@@ -36,10 +36,17 @@ jobs:
             git clean -fd
 
             echo "=== Stopping old container if running ==="
-            docker stop health-app || true
+            if [ "$(docker ps -q -f name=health-app)" ]; then
+              docker stop health-app
+            fi
 
             echo "=== Removing old container if exists (force remove) ==="
-            docker rm -f health-app || true
+            if [ "$(docker ps -aq -f name=health-app)" ]; then
+              docker rm -f health-app
+            fi
+
+            # Wait a moment to ensure Docker releases the container name
+            sleep 2
 
             echo "=== Cleaning dangling Docker images and volumes ==="
             docker image prune -af || true
