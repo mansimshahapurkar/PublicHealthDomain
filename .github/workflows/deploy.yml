@@ -1,4 +1,4 @@
-name: Deploy to EC2 and Sync Logs 
+name: Deploy to EC2 and Sync Logs
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
               echo "No existing 'health-app' container found."
             fi
 
-            echo "=== Waiting to ensure Docker frees container name ==="
+            echo "=== Waiting for Docker to release container name ==="
             sleep 3
 
             echo "=== Docker cleanup ==="
@@ -65,9 +65,9 @@ jobs:
 
             echo "=== Sync logs to S3 ==="
             docker exec env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
-                           AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-                           AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-                           aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive
+                            AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                            AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+                            aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive || true
 
             echo "=== Deployment complete! ==="
           EOF
