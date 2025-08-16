@@ -29,20 +29,23 @@ jobs:
 
             echo "=== Cleaning repo and pulling latest code ==="
             cd ~/PublicHealthDomain
-            git reset --hard
+
+            # Remove git lock file if exists
+            rm -f .git/refs/remotes/origin/main.lock
+
+            # Reset remote HEAD and prune stale refs
+            git remote set-head origin -a
+            git fetch --prune origin
+
+            # Reset hard and clean working directory
+            git reset --hard origin/main
             git clean -fd
-            git pull origin main
 
-            echo "=== Removing old container if exists (force) ==="
-            docker rm -f health-app || true
+            echo "=== Stopping old container if running ==="
+            docker stop health-app || true
 
-            echo "=== Checking if container still exists ==="
-            if docker ps -a --filter "name=health-app" --format '{{.Names}}' | grep -q '^health-app$'; then
-              echo "Container health-app still exists. Removing again..."
-              docker rm -f health-app || true
-            else
-              echo "Container health-app removed successfully."
-            fi
+            echo "=== Removing old container if exists ==="
+            docker rm health-app || true
 
             echo "=== Cleaning dangling Docker images and volumes ==="
             docker image prune -af || true
