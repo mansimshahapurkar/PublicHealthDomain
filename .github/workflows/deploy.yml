@@ -24,66 +24,54 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            echo "=== Cleaning repo and pulling latest code ==="
+            echo "=== Pulling latest code ==="
             cd ~/PublicHealthDomain
-            rm -f .git/refs/remotes/origin/main.lock || true
-            git remote set-head origin -a
             git fetch --prune origin
             git reset --hard origin/main
             git clean -fd
 
-            echo "=== Stopping old container if running ==="
+            echo "=== Stop and remove existing container by name ==="
             if docker ps -q -f name=health-app | grep -q .; then
-              docker stop health-app
-            else
-              echo "No running container to stop"
+              docker stop health-app || true
             fi
-
-            echo "=== Removing old container if exists (force remove) ==="
             if docker ps -aq -f name=health-app | grep -q .; then
-              docker rm -f health-app
-            else
-              echo "No container to remove"
-            fi
-
-            echo "=== Verify container is gone ==="
-            if docker ps -a --format '{{.Names}}' | grep -Eq '^health-app$'; then
-              echo "Container still exists! Attempting forced removal again."
               docker rm -f health-app || true
-            else
-              echo "Container removed successfully."
             fi
 
-            echo "=== Waiting 5 seconds to ensure Docker frees container name ==="
-            sleep 5
+            echo "=== Double-check: remove any container using same name by ID ==="
+            CONTAINER_ID=$(docker ps -aq --filter "name=^/health-app$")
+            if [ ! -z "$CONTAINER_ID" ]; then
+              echo "Found lingering container ID: $CONTAINER_ID. Forcibly removing..."
+              docker rm -f "$CONTAINER_ID" || true
+            fi
 
-            echo "=== Cleaning dangling Docker images and volumes ==="
+            echo "=== Docker cleanup ==="
             docker image prune -af || true
             docker volume prune -f || true
 
             echo "=== Building Docker image ==="
             docker build --no-cache -t public-health-app:latest .
 
-            echo "=== Running new container with AWS credentials ==="
+            echo "=== Running new container on port 8000 ==="
             docker run -d --name health-app -p 8000:8000 \
               -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
               -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
               -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
               public-health-app:latest
 
-            echo "=== Ensure logs directory exists inside container ==="
+            echo "=== Ensure logs directory exists ==="
             docker exec health-app mkdir -p /app/logs
 
-            echo "=== Sync logs to S3 with explicit AWS credentials passed inside container ==="
+            echo "=== Sync logs to S3 ==="
             docker exec -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
                         -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
                         -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
                         health-app aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive
 
-            echo "Deployment complete!"
+            echo "=== Deployment complete! ==="
           EOF
 
       - name: Confirm deployment
