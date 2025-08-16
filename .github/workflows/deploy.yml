@@ -57,7 +57,7 @@ jobs:
               echo "Container removed successfully."
             fi
 
-            # Wait a moment to ensure Docker frees container name
+            echo "=== Waiting 5 seconds to ensure Docker frees container name ==="
             sleep 5
 
             echo "=== Cleaning dangling Docker images and volumes ==="
