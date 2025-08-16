@@ -1,4 +1,4 @@
-name: Deploy to EC2 and Sync Logs 
+name: Deploy to EC2 and Sync Logs
 
 on:
   push:
@@ -47,6 +47,11 @@ jobs:
 
             echo "=== Building Docker image ==="
             docker build --no-cache -t public-health-app:latest .
+
+            echo "=== Double-check and remove container before running new one ==="
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^health-app$'; then
+              docker rm -f health-app
+            fi
 
             echo "=== Running new container with AWS credentials ==="
             docker run -d --name health-app -p 8000:8000 \
