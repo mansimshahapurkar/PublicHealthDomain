@@ -39,7 +39,9 @@ jobs:
             docker stop health-app || true
 
             echo "=== Removing old container if exists (force remove) ==="
-            docker rm -f health-app || true
+            if docker ps -a --format '{{.Names}}' | grep -wq 'health-app'; then
+              docker rm -f health-app
+            fi
 
             echo "=== Cleaning dangling Docker images and volumes ==="
             docker image prune -af || true
@@ -47,11 +49,6 @@ jobs:
 
             echo "=== Building Docker image ==="
             docker build --no-cache -t public-health-app:latest .
-
-            echo "=== Double-check and remove container before running new one ==="
-            if docker ps -a --format '{{.Names}}' | grep -Eq '^health-app$'; then
-              docker rm -f health-app
-            fi
 
             echo "=== Running new container with AWS credentials ==="
             docker run -d --name health-app -p 8000:8000 \
@@ -63,7 +60,7 @@ jobs:
             echo "=== Ensure logs directory exists inside container ==="
             docker exec health-app mkdir -p /app/logs
 
-            echo "=== Sync logs to S3 with explicit AWS credentials passed inside container ==="
+            echo "=== Sync logs to S3 with AWS credentials explicitly passed ==="
             docker exec health-app sh -c "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
 
             echo "Deployment complete!"
