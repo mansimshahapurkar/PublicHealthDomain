@@ -1,4 +1,4 @@
-name: Deploy to EC2 and Sync Logs
+name: Deploy to EC2 and Sync Logs 
 
 on:
   push:
