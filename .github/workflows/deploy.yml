@@ -35,6 +35,9 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
+            echo "=== Stopping old container if running ==="
+            docker stop health-app || true
+
             echo "=== Removing old container if exists (force remove) ==="
             docker rm -f health-app || true
 
@@ -55,8 +58,8 @@ jobs:
             echo "=== Ensure logs directory exists inside container ==="
             docker exec health-app mkdir -p /app/logs
 
-            echo "=== Sync logs to S3 ==="
-            docker exec health-app sh -c "aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
+            echo "=== Sync logs to S3 with explicit AWS credentials passed inside container ==="
+            docker exec health-app sh -c "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} aws s3 cp /app/logs/ s3://jenkins-artifacts-logs/logs/ --recursive"
 
             echo "Deployment complete!"
           EOF
